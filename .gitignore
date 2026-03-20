@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PostgreSQL
+*.dump
+*.backup
+
+# Temporary files
+*.tmp
+*.log
