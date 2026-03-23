@@ -6,7 +6,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 ![Status](https://img.shields.io/badge/Trạng_thái-Hoàn_thành-success.svg)
 
-Dự án cơ sở dữ liệu PostgreSQL hoàn chỉnh dành cho **Trung tâm Đào tạo Kỹ năng CNTT T3H – TP.HCM**. Bao gồm thiết kế CSDL chuẩn hóa 3NF, dữ liệu mẫu thực tế (~15.000 dòng), 17 truy vấn phân tích nâng cao, giao diện web Flask, và 6 module minh họa các mô hình CSDL nâng cao (môn Thạc sĩ).
+Dự án cơ sở dữ liệu PostgreSQL hoàn chỉnh dành cho **Trung Tâm Tin Học – Trường Đại học Khoa học Tự Nhiên, Đại học Quốc gia TP. Hồ Chí Minh** ([csc.edu.vn](https://csc.edu.vn)). Bao gồm thiết kế CSDL chuẩn hóa 3NF, dữ liệu mẫu thực tế (~15.000 dòng), 17 truy vấn phân tích nâng cao, giao diện web Flask, và 6 module minh họa các mô hình CSDL nâng cao (môn Thạc sĩ).
 
 ---
 
@@ -229,5 +229,5 @@ Xem toàn bộ SQL tại [`database/queries.sql`](database/queries.sql).
 ## Thông Tin Dự Án
 
 - **Môn học:** Cơ sở dữ liệu nâng cao (Advanced Database)
-- **Đơn vị:** Trung tâm Đào tạo T3H – TP. Hồ Chí Minh
+- **Đơn vị:** Trung Tâm Tin Học – Trường ĐH Khoa học Tự Nhiên, ĐHQG TP. Hồ Chí Minh
 - **Stack:** PostgreSQL 16 (PostGIS), Python 3.8+, Flask, Bootstrap 5, Chart.js, Docker
