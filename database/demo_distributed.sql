@@ -148,33 +148,67 @@ ON CONFLICT DO NOTHING;
 
 -- ── 4. FOREIGN DATA WRAPPER (FDW) – Truy cập node từ xa ──────────────────
 -- FDW cho phép truy vấn CSDL khác như bảng local (trong thực tế: khác server)
+-- archive_node = PostgreSQL container thứ 2 (t3h_archive, port 5433 on host)
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
-CREATE EXTENSION IF NOT EXISTS file_fdw;
 
--- Mô phỏng: connect đến "archive node" (trong lab này dùng cùng DB)
--- Trong production: host = địa chỉ IP của node khác
-/*
+-- Idempotent: xóa cũ nếu tồn tại trước khi tạo lại
+DROP SERVER IF EXISTS archive_node CASCADE;
+
 CREATE SERVER archive_node
     FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host '10.0.0.2', port '5432', dbname 't3h_archive');
+    OPTIONS (host 'archive_node', port '5432', dbname 't3h_archive');
 
 CREATE USER MAPPING FOR CURRENT_USER
     SERVER archive_node
     OPTIONS (user 'archive_reader', password 'readonly123');
 
--- Bảng nằm trên node archive (transparent access)
-CREATE FOREIGN TABLE archived_enrollments_2022 (
+-- Foreign table: truy cập bảng trên archive_node như bảng local
+CREATE FOREIGN TABLE IF NOT EXISTS archived_enrollments_2022 (
     enrollment_id   INTEGER,
     student_id      INTEGER,
-    class_id        INTEGER,
+    class_code      VARCHAR(20),
+    course_name     VARCHAR(100),
     enrollment_date DATE,
-    status          VARCHAR(20)
+    status          VARCHAR(20),
+    final_grade     NUMERIC(5,2),
+    semester        VARCHAR(20)
 ) SERVER archive_node
   OPTIONS (schema_name 'public', table_name 'enrollments_2022');
 
--- Distributed query: join local + remote transparent
-SELECT COUNT(*) FROM archived_enrollments_2022;  -- Query sent to archive_node
-*/
+CREATE FOREIGN TABLE IF NOT EXISTS archived_course_stats_2022 (
+    course_name     VARCHAR(100),
+    total_enrolled  INTEGER,
+    avg_grade       NUMERIC(5,2),
+    pass_rate       NUMERIC(5,2),
+    year            INTEGER
+) SERVER archive_node
+  OPTIONS (schema_name 'public', table_name 'course_stats_2022');
+
+-- Distributed query 1: đếm bản ghi trên node archive (query được gửi sang archive_node)
+SELECT COUNT(*) AS total_archive_records FROM archived_enrollments_2022;
+
+-- Distributed query 2: JOIN local (students) + remote (archive_node) hoàn toàn trong suốt
+SELECT
+    s.student_id,
+    s.first_name || ' ' || s.last_name  AS full_name,
+    a.course_name,
+    a.final_grade,
+    a.semester
+FROM students s                         -- bảng LOCAL (t3h_postgres)
+JOIN archived_enrollments_2022 a        -- bảng REMOTE (t3h_archive)
+     ON s.student_id = a.student_id
+WHERE a.status = 'Completed'
+ORDER BY a.final_grade DESC NULLS LAST
+LIMIT 10;
+
+-- Distributed query 3: so sánh hiệu suất khóa học 2022 vs hiện tại
+SELECT
+    arc.course_name,
+    arc.avg_grade       AS avg_2022,
+    arc.pass_rate       AS pass_rate_2022,
+    arc.total_enrolled  AS enrolled_2022
+FROM archived_course_stats_2022 arc     -- REMOTE node
+ORDER BY arc.avg_grade DESC;
 
 -- ── 5. Thống kê sharding ─────────────────────────────────────────────────
 -- Minh họa hiệu quả partitioning vs. non-partitioned

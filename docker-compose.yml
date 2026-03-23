@@ -40,6 +40,30 @@ services:
     networks:
       - t3h_net
 
+  # ─── Archive Node (PostgreSQL thứ 2 – mô phỏng node phân tán) ───────────────
+  archive_node:
+    image: postgres:16
+    container_name: t3h_archive
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       t3h_archive
+      POSTGRES_USER:     archive_reader
+      POSTGRES_PASSWORD: readonly123
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "${ARCHIVE_PORT:-5433}:5432"
+    volumes:
+      - archive_data:/var/lib/postgresql/data
+      - ./database/archive_init.sql:/docker-entrypoint-initdb.d/01_archive_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archive_reader -d t3h_archive"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - t3h_net
+
   # ─── Data Generator ─────────────────────────────────────────────────────────
   data-generator:
     build:
@@ -112,6 +136,8 @@ services:
 volumes:
   pgdata:
     name: t3h_pgdata
+  archive_data:
+    name: t3h_archive_data
   pgadmin_data:
     name: t3h_pgadmin_data
 

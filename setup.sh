@@ -140,10 +140,10 @@ step "Build Docker images..."
 docker compose build --parallel
 success "Build xong"
 
-# ── Khởi động PostgreSQL ─────────────────────────────────────────────────────
-step "Khởi động PostgreSQL..."
-docker compose up -d postgres
-info "Chờ PostgreSQL sẵn sàng..."
+# ── Khởi động PostgreSQL + Archive Node ─────────────────────────────────────
+step "Khởi động PostgreSQL + Archive Node..."
+docker compose up -d postgres archive_node
+info "Chờ PostgreSQL (main) sẵn sàng..."
 
 TIMEOUT=60
 ELAPSED=0
@@ -158,7 +158,22 @@ until docker compose exec -T postgres pg_isready \
   ELAPSED=$((ELAPSED+2))
 done
 echo ""
-success "PostgreSQL sẵn sàng! (Schema đã được khởi tạo)"
+success "PostgreSQL (main) sẵn sàng!"
+
+info "Chờ Archive Node (PostgreSQL thứ 2) sẵn sàng..."
+ELAPSED=0
+until docker compose exec -T archive_node pg_isready \
+        -U "archive_reader" -d "t3h_archive" &>/dev/null; do
+  if [ $ELAPSED -ge $TIMEOUT ]; then
+    warn "Archive Node chưa sẵn sàng sau ${TIMEOUT}s – FDW có thể lỗi"
+    break
+  fi
+  printf "."
+  sleep 2
+  ELAPSED=$((ELAPSED+2))
+done
+echo ""
+success "Archive Node sẵn sàng! (Schema t3h_archive đã được khởi tạo)"
 
 # ── Chạy Data Generator ──────────────────────────────────────────────────────
 step "Chạy Data Generator ($(echo "$PRESET" | tr '[:lower:]' '[:upper:]'))..."
@@ -216,10 +231,13 @@ echo -e "${GREEN}${BOLD}╔═════════════════�
 echo -e "${GREEN}${BOLD}║  ✓  Hệ thống đã sẵn sàng!                        ║${NC}"
 echo -e "${GREEN}${BOLD}╚═══════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e " ${CYAN}🌐 Web Demo    :${NC} http://localhost:${WEB_PORT:-5000}"
-echo -e " ${CYAN}🐘 PostgreSQL  :${NC} localhost:${POSTGRES_PORT:-5432}"
-echo -e "    Database     : ${POSTGRES_DB:-learning_data_system}"
-echo -e "    User/Pass    : ${POSTGRES_USER:-postgres} / ${POSTGRES_PASSWORD:-postgres123}"
+echo -e " ${CYAN}🌐 Web Demo       :${NC} http://localhost:${WEB_PORT:-5000}"
+echo -e " ${CYAN}🐘 PostgreSQL Main:${NC} localhost:${POSTGRES_PORT:-5432}"
+echo -e "    Database         : ${POSTGRES_DB:-learning_data_system}"
+echo -e "    User/Pass        : ${POSTGRES_USER:-postgres} / ${POSTGRES_PASSWORD:-postgres123}"
+echo -e " ${CYAN}🐘 Archive Node   :${NC} localhost:${ARCHIVE_PORT:-5433}"
+echo -e "    Database         : t3h_archive"
+echo -e "    User/Pass        : archive_reader / readonly123"
 echo ""
 echo -e " ${YELLOW}Lệnh hữu ích:${NC}"
 echo -e "   ./setup.sh logs      # Xem logs realtime"

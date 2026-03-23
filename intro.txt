@@ -38,3 +38,38 @@
   Cập nhật đi kèm:
   - docker-compose.yml → đổi image sang postgis/postgis:16-3.4 + mount đủ 6 demo files vào initdb.d
   - report/PHAN_TICH.md → bổ sung mục 6 mô tả chi tiết từng mô hình, điểm đánh giá nâng lên 9.5/10
+
+  FDW hoạt động hoàn hảo – query JOIN local + remote trong suốt. Đây là tóm tắt đầy đủ:
+
+  ---
+  Kết quả
+
+  2 PostgreSQL containers đang chạy
+
+  ┌───────────┬──────────────────────┬────────────────┐
+  │           │      Main Node       │  Archive Node  │
+  ├───────────┼──────────────────────┼────────────────┤
+  │ Container │ t3h_postgres         │ t3h_archive    │
+  ├───────────┼──────────────────────┼────────────────┤
+  │ Database  │ learning_data_system │ t3h_archive    │
+  ├───────────┼──────────────────────┼────────────────┤
+  │ Port      │ 5432                 │ 5433           │
+  ├───────────┼──────────────────────┼────────────────┤
+  │ User      │ postgres             │ archive_reader │
+  ├───────────┼──────────────────────┼────────────────┤
+  │ Password  │ postgres123          │ readonly123    │
+  └───────────┴──────────────────────┴────────────────┘
+
+  Kết nối TablePlus cho Archive Node
+
+  Host:     localhost
+  Port:     5433
+  Database: t3h_archive
+  User:     archive_reader
+  Password: readonly123
+
+  FDW đã hoạt động – 3 loại distributed query
+
+  1. Đếm records trên node từ xa – query được route sang archive_node
+  2. JOIN local × remote – students (main) ⋈ archived_enrollments_2022 (archive) – trong suốt hoàn toàn
+  3. So sánh stats 2022 vs hiện tại – cross-node aggregation
