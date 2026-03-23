@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Khóa học - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-book-open me-2 text-success"></i>Quản lý Khóa học{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Danh sách khóa học ({{ courses|length }})</span>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+      <i class="fas fa-plus me-1"></i>Thêm khóa học
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>#</th><th>Mã</th><th>Tên khóa học</th><th>Danh mục</th><th>Cấp độ</th>
+        <th>Số tín chỉ</th><th>Giờ học</th><th>Học phí</th>
+        <th>Lớp</th><th>Đăng ký</th><th>Điểm TB</th><th>Trạng thái</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for c in courses %}
+      <tr>
+        <td>{{ c.course_id }}</td>
+        <td><span class="badge bg-secondary">{{ c.course_code }}</span></td>
+        <td><strong>{{ c.course_name }}</strong></td>
+        <td>{{ c.category }}</td>
+        <td>
+          <span class="badge
+            {% if c.level=='Beginner' %}bg-success
+            {% elif c.level=='Intermediate' %}bg-warning text-dark
+            {% else %}bg-danger{% endif %}">
+            {{ c.level }}
+          </span>
+        </td>
+        <td class="text-center">{{ c.credits }}</td>
+        <td class="text-center">{{ c.duration_hours }}h</td>
+        <td class="text-end">{{ "{:,.0f}đ".format(c.tuition_fee) }}</td>
+        <td class="text-center">{{ c.num_classes or 0 }}</td>
+        <td class="text-center">{{ c.total_enrollments or 0 }}</td>
+        <td>
+          {% if c.avg_score is not none %}
+            <span class="fw-semibold {% if c.avg_score >= 70 %}text-success{% elif c.avg_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+              {{ c.avg_score }}
+            </span>
+          {% else %}–{% endif %}
+        </td>
+        <td>
+          <span class="badge {% if c.status=='Active' %}bg-success{% elif c.status=='Inactive' %}bg-secondary{% else %}bg-dark{% endif %}">
+            {{ c.status }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editC{{ c.course_id }}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <form method="post" action="/courses/{{ c.course_id }}/delete" class="d-inline"
+            onsubmit="return confirm('Xóa khóa học này?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Edit Modal -->
+      <div class="modal fade" id="editC{{ c.course_id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form method="post" action="/courses/{{ c.course_id }}/edit">
+              <div class="modal-header"><h5 class="modal-title">Sửa: {{ c.course_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <div class="row g-2">
+                  <div class="col-md-4"><label class="form-label">Mã khóa học</label>
+                    <input name="course_code" class="form-control" value="{{ c.course_code }}" required></div>
+                  <div class="col-md-8"><label class="form-label">Tên khóa học</label>
+                    <input name="course_name" class="form-control" value="{{ c.course_name }}" required></div>
+                  <div class="col-md-4"><label class="form-label">Danh mục</label>
+                    <input name="category" class="form-control" value="{{ c.category }}" required></div>
+                  <div class="col-md-4"><label class="form-label">Cấp độ</label>
+                    <select name="level" class="form-select">
+                      {% for lv in ['Beginner','Intermediate','Advanced'] %}
+                      <option {% if c.level==lv %}selected{% endif %}>{{ lv }}</option>{% endfor %}
+                    </select></div>
+                  <div class="col-md-4"><label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                      {% for st in ['Active','Inactive','Archived'] %}
+                      <option {% if c.status==st %}selected{% endif %}>{{ st }}</option>{% endfor %}
+                    </select></div>
+                  <div class="col-md-4"><label class="form-label">Tín chỉ</label>
+                    <input name="credits" type="number" class="form-control" value="{{ c.credits }}" min="1" max="10" required></div>
+                  <div class="col-md-4"><label class="form-label">Số giờ học</label>
+                    <input name="duration_hours" type="number" class="form-control" value="{{ c.duration_hours }}" required></div>
+                  <div class="col-md-4"><label class="form-label">Học phí (đ)</label>
+                    <input name="tuition_fee" type="number" class="form-control" value="{{ c.tuition_fee }}" required></div>
+                  <div class="col-12"><label class="form-label">Mô tả</label>
+                    <textarea name="description" class="form-control" rows="2">{{ c.description or '' }}</textarea></div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" type="submit">Lưu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="/courses/add">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm khóa học mới</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">Mã khóa học *</label>
+              <input name="course_code" class="form-control" required placeholder="VD: PY101"></div>
+            <div class="col-md-8"><label class="form-label">Tên khóa học *</label>
+              <input name="course_name" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Danh mục *</label>
+              <input name="category" class="form-control" required placeholder="Programming, Data Science..."></div>
+            <div class="col-md-4"><label class="form-label">Cấp độ</label>
+              <select name="level" class="form-select">
+                <option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+            <div class="col-md-4"><label class="form-label">Tín chỉ *</label>
+              <input name="credits" type="number" class="form-control" value="3" min="1" max="10" required></div>
+            <div class="col-md-4"><label class="form-label">Số giờ học *</label>
+              <input name="duration_hours" type="number" class="form-control" value="45" required></div>
+            <div class="col-md-4"><label class="form-label">Học phí (đ) *</label>
+              <input name="tuition_fee" type="number" class="form-control" value="3500000" required></div>
+            <div class="col-md-4"><label class="form-label">Trạng thái</label>
+              <select name="status" class="form-select"><option>Active</option><option>Inactive</option></select></div>
+            <div class="col-12"><label class="form-label">Mô tả</label>
+              <textarea name="description" class="form-control" rows="2"></textarea></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-success" type="submit"><i class="fas fa-save me-1"></i>Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

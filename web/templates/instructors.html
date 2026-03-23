@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Giảng viên - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-chalkboard-teacher me-2 text-warning"></i>Quản lý Giảng viên{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Danh sách giảng viên ({{ instructors|length }})</span>
+    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
+      <i class="fas fa-plus me-1"></i>Thêm giảng viên
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>#</th><th>Họ và tên</th><th>Email</th><th>Chuyên môn</th>
+        <th>Bằng cấp</th><th>Kinh nghiệm</th><th>Ngày vào</th>
+        <th>Lớp dạy</th><th>Học viên</th><th>Điểm TB HV</th><th>Giờ dạy</th><th>TT</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for i in instructors %}
+      <tr>
+        <td>{{ i.instructor_id }}</td>
+        <td><strong>{{ i.first_name }} {{ i.last_name }}</strong></td>
+        <td><small>{{ i.email }}</small></td>
+        <td>{{ i.specialization }}</td>
+        <td><small>{{ i.qualification or '–' }}</small></td>
+        <td>{{ i.experience_years }} năm</td>
+        <td>{{ i.hire_date }}</td>
+        <td class="text-center">{{ i.classes_taught or 0 }}</td>
+        <td class="text-center">{{ i.total_students or 0 }}</td>
+        <td>
+          {% if i.avg_student_score is not none %}
+            <span class="fw-bold {% if i.avg_student_score >= 70 %}text-success{% elif i.avg_student_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+              {{ i.avg_student_score }}
+            </span>
+          {% else %}–{% endif %}
+        </td>
+        <td>{{ i.total_hours or 0 }}h</td>
+        <td>
+          <span class="badge {% if i.status=='Active' %}bg-success{% elif i.status=='On Leave' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+            {{ i.status }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editI{{ i.instructor_id }}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <form method="post" action="/instructors/{{ i.instructor_id }}/delete" class="d-inline"
+            onsubmit="return confirm('Xóa giảng viên này?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Edit Modal -->
+      <div class="modal fade" id="editI{{ i.instructor_id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form method="post" action="/instructors/{{ i.instructor_id }}/edit">
+              <div class="modal-header"><h5 class="modal-title">Sửa: {{ i.first_name }} {{ i.last_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <div class="row g-2">
+                  <div class="col-md-4"><label class="form-label">Tên *</label>
+                    <input name="first_name" class="form-control" value="{{ i.first_name }}" required></div>
+                  <div class="col-md-4"><label class="form-label">Họ (và đệm) *</label>
+                    <input name="last_name" class="form-control" value="{{ i.last_name }}" required></div>
+                  <div class="col-md-4"><label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                      {% for st in ['Active','Inactive','On Leave'] %}
+                      <option {% if i.status==st %}selected{% endif %}>{{ st }}</option>{% endfor %}
+                    </select></div>
+                  <div class="col-md-6"><label class="form-label">Email *</label>
+                    <input name="email" type="email" class="form-control" value="{{ i.email }}" required></div>
+                  <div class="col-md-6"><label class="form-label">SĐT</label>
+                    <input name="phone" class="form-control" value="{{ i.phone or '' }}"></div>
+                  <div class="col-md-6"><label class="form-label">Chuyên môn *</label>
+                    <input name="specialization" class="form-control" value="{{ i.specialization }}" required></div>
+                  <div class="col-md-6"><label class="form-label">Bằng cấp</label>
+                    <input name="qualification" class="form-control" value="{{ i.qualification or '' }}"></div>
+                  <div class="col-md-6"><label class="form-label">Ngày vào *</label>
+                    <input name="hire_date" type="date" class="form-control" value="{{ i.hire_date }}" required></div>
+                  <div class="col-md-6"><label class="form-label">Năm kinh nghiệm</label>
+                    <input name="experience_years" type="number" class="form-control" value="{{ i.experience_years }}" min="0"></div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" type="submit">Lưu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addInstructorModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="/instructors/add">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title"><i class="fas fa-user-tie me-2"></i>Thêm giảng viên mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">Tên *</label>
+              <input name="first_name" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Họ (và đệm) *</label>
+              <input name="last_name" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Email *</label>
+              <input name="email" type="email" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">SĐT</label>
+              <input name="phone" class="form-control" placeholder="09xxxxxxxx"></div>
+            <div class="col-md-4"><label class="form-label">Chuyên môn *</label>
+              <input name="specialization" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Bằng cấp</label>
+              <input name="qualification" class="form-control" placeholder="Thạc sĩ CNTT"></div>
+            <div class="col-md-4"><label class="form-label">Ngày vào *</label>
+              <input name="hire_date" type="date" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Năm kinh nghiệm</label>
+              <input name="experience_years" type="number" class="form-control" value="0" min="0"></div>
+            <div class="col-md-4"><label class="form-label">Trạng thái</label>
+              <select name="status" class="form-select"><option>Active</option><option>Inactive</option><option>On Leave</option></select></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-warning" type="submit"><i class="fas fa-save me-1"></i>Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

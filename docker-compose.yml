@@ -1,0 +1,121 @@
+version: '3.9'
+
+# =============================================================================
+# Learning Data System – Docker Compose
+# Trung tâm Tin học T3H | t3h.com.vn
+#
+# Khởi chạy: docker compose up --build
+# Dừng:      docker compose down
+# Xóa data:  docker compose down -v
+# =============================================================================
+
+services:
+
+  # ─── PostgreSQL + PostGIS ────────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: t3h_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-learning_data_system}
+      POSTGRES_USER:     ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Init scripts – chỉ schema/index, chạy khi postgres khởi tạo lần đầu
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/index.sql:/docker-entrypoint-initdb.d/02_index.sql:ro
+      # Demo files mount vào /demo_sql – setup.sh chạy sau khi data-generator xong
+      - ./database:/demo_sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-learning_data_system}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - t3h_net
+
+  # ─── Data Generator ─────────────────────────────────────────────────────────
+  data-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.generator
+    container_name: t3h_generator
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST:     postgres
+      DB_NAME:     ${POSTGRES_DB:-learning_data_system}
+      DB_USER:     ${POSTGRES_USER:-postgres}
+      DB_PASS:     ${POSTGRES_PASSWORD:-postgres123}
+      DB_PORT:     5432
+      DATA_PRESET: ${DATA_PRESET:-t3h}     # t3h | generic
+    networks:
+      - t3h_net
+    # Tắt sau khi chạy xong (không restart)
+    restart: "no"
+
+  # ─── Web Demo (Flask) ────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: t3h_web
+    depends_on:
+      postgres:
+        condition: service_healthy
+      data-generator:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST:     postgres
+      DB_NAME:     ${POSTGRES_DB:-learning_data_system}
+      DB_USER:     ${POSTGRES_USER:-postgres}
+      DB_PASS:     ${POSTGRES_PASSWORD:-postgres123}
+      DB_PORT:     5432
+      SECRET_KEY:  t3h_learning_system_2026
+    ports:
+      - "${WEB_PORT:-5000}:5000"
+    networks:
+      - t3h_net
+    restart: unless-stopped
+
+  # ─── pgAdmin (tuỳ chọn – để quản lý DB qua giao diện) ────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: t3h_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    ${PGADMIN_EMAIL:-admin@t3h.edu.vn}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "${PGADMIN_PORT:-8080}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin_servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - t3h_net
+    profiles:
+      - tools   # Chỉ chạy khi: docker compose --profile tools up
+
+# =============================================================================
+volumes:
+  pgdata:
+    name: t3h_pgdata
+  pgadmin_data:
+    name: t3h_pgadmin_data
+
+networks:
+  t3h_net:
+    name: t3h_network
+    driver: bridge

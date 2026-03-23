@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "T3H Learning DB",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "learning_data_system",
+      "Username": "postgres",
+      "SSLMode": "prefer",
+      "PassFile": "/tmp/pgpassfile"
+    }
+  }
+}

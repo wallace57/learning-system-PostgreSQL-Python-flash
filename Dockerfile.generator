@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Cài đặt psycopg2 (không cần build tools nhờ binary wheel)
+RUN pip install --no-cache-dir psycopg2-binary
+
+# Copy script không cần tương tác
+COPY generate_data_docker.py .
+
+CMD ["python", "-u", "generate_data_docker.py"]

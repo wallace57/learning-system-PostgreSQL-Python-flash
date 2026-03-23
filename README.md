@@ -1,3 +1,4 @@
+# Xây dựng hệ thống quản lý và phân tích dữ liệu học tập cho trung tâm đào tạo tại TP. Hồ Chí Minh
 # 🎓 Hệ Thống Quản Lý Dữ Liệu Học Tập (Learning Data System)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Học viên - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-users me-2 text-primary"></i>Quản lý Học viên{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Danh sách học viên ({{ students|length }})</span>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+      <i class="fas fa-plus me-1"></i>Thêm học viên
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>#</th><th>Họ và tên</th><th>Email</th><th>SĐT</th>
+        <th>Ngày sinh</th><th>Giới tính</th><th>Địa chỉ</th>
+        <th>Trạng thái</th><th>Khóa học</th><th>Điểm TB</th><th>Chuyên cần</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.student_id }}</td>
+        <td><strong>{{ s.first_name }} {{ s.last_name }}</strong></td>
+        <td><small>{{ s.email }}</small></td>
+        <td>{{ s.phone or '–' }}</td>
+        <td>{{ s.date_of_birth }}</td>
+        <td>{{ s.gender }}</td>
+        <td><small>{{ s.address or '–' }}</small></td>
+        <td>
+          <span class="badge
+            {% if s.status=='Active' %}badge-active
+            {% elif s.status=='Graduated' %}badge-graduated
+            {% elif s.status=='Suspended' %}badge-suspended
+            {% else %}badge-inactive{% endif %}">
+            {{ s.status }}
+          </span>
+        </td>
+        <td class="text-center">{{ s.num_courses or 0 }}</td>
+        <td>
+          {% if s.avg_score is not none %}
+            <span class="fw-semibold
+              {% if s.avg_score >= 70 %}text-success
+              {% elif s.avg_score >= 50 %}text-warning
+              {% else %}text-danger{% endif %}">
+              {{ s.avg_score }}
+            </span>
+          {% else %}–{% endif %}
+        </td>
+        <td>
+          {% if s.att_pct is not none %}
+            <div class="d-flex align-items-center gap-1">
+              <div class="progress progress-xs flex-grow-1" style="width:50px">
+                <div class="progress-bar
+                  {% if s.att_pct >= 70 %}bg-success
+                  {% elif s.att_pct >= 50 %}bg-warning
+                  {% else %}bg-danger{% endif %}"
+                  style="width:{{ s.att_pct }}%"></div>
+              </div>
+              <small>{{ s.att_pct }}%</small>
+            </div>
+          {% else %}–{% endif %}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+            data-bs-target="#editModal{{ s.student_id }}"><i class="fas fa-edit"></i></button>
+          <form method="post" action="/students/{{ s.student_id }}/delete" class="d-inline"
+            onsubmit="return confirm('Xóa học viên này?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+
+      <!-- Edit Modal -->
+      <div class="modal fade" id="editModal{{ s.student_id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form method="post" action="/students/{{ s.student_id }}/edit">
+              <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa: {{ s.first_name }} {{ s.last_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <label class="form-label">Tên <span class="text-danger">*</span></label>
+                    <input name="first_name" class="form-control" value="{{ s.first_name }}" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Họ (và đệm) <span class="text-danger">*</span></label>
+                    <input name="last_name" class="form-control" value="{{ s.last_name }}" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Giới tính</label>
+                    <select name="gender" class="form-select">
+                      <option {% if s.gender=='Nam' %}selected{% endif %}>Nam</option>
+                      <option {% if s.gender=='Nữ' %}selected{% endif %}>Nữ</option>
+                      <option {% if s.gender=='Khác' %}selected{% endif %}>Khác</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                    <input name="email" type="email" class="form-control" value="{{ s.email }}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">SĐT</label>
+                    <input name="phone" class="form-control" value="{{ s.phone or '' }}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+                    <input name="date_of_birth" type="date" class="form-control" value="{{ s.date_of_birth }}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                      {% for st in ['Active','Inactive','Graduated','Suspended'] %}
+                      <option {% if s.status==st %}selected{% endif %}>{{ st }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Địa chỉ</label>
+                    <input name="address" class="form-control" value="{{ s.address or '' }}">
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="/students/add">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Thêm học viên mới</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">Tên <span class="text-danger">*</span></label>
+              <input name="first_name" class="form-control" required placeholder="VD: Minh">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Họ (và đệm) <span class="text-danger">*</span></label>
+              <input name="last_name" class="form-control" required placeholder="VD: Nguyễn Văn">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Giới tính</label>
+              <select name="gender" class="form-select">
+                <option>Nam</option><option>Nữ</option><option>Khác</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email <span class="text-danger">*</span></label>
+              <input name="email" type="email" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">SĐT</label>
+              <input name="phone" class="form-control" placeholder="09xxxxxxxx">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+              <input name="date_of_birth" type="date" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Ngày nhập học</label>
+              <input name="enrolled_date" type="date" class="form-control" value="2025-01-01">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Địa chỉ</label>
+              <input name="address" class="form-control" placeholder="Quận/Huyện, TP.HCM">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i>Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

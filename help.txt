@@ -1,0 +1,89 @@
+Lần đầu (one-click):
+  chmod +x setup.sh
+  ./setup.sh
+
+  Script sẽ tự động:
+  1. Kiểm tra Docker đang chạy
+  2. Khởi động PostgreSQL + tạo schema tự động (qua docker-entrypoint-initdb.d/)
+  3. Chờ DB healthy → chạy generate_data_docker.py → ~15,000 bản ghi T3H
+  4. Khởi động Flask web → http://localhost:5000
+
+  Các lệnh khác:
+  ./setup.sh generic   # Dữ liệu generic (không phải T3H)
+  ./setup.sh tools     # Thêm pgAdmin tại http://localhost:8080
+  ./setup.sh logs      # Xem logs realtime
+  ./setup.sh reset     # Xóa sạch + chạy lại từ đầu
+  ./setup.sh down      # Dừng tất cả
+
+  Kết nối thủ công với psql/DBeaver:
+  Host: localhost | Port: 5432
+  DB: learning_data_system | User: postgres | Pass: postgres123
+
+============================================================
+ ✓  Hoàn thành! Thống kê dữ liệu đã nạp:
+============================================================
+   Học viên       : 300
+   Khóa học       : 16  [T3H]
+   Giảng viên     : 20
+   Lớp học        : 80
+   Đăng ký        : 1,755
+   Điểm danh      : 25,080
+   Bảng điểm      : 5,484
+   ─────────────────────────────────────
+   TỔNG CỘNG      : 32,735 bản ghi
+
+
+   ---
+  Tổng kết những gì đã thực hiện
+
+  ✅ Yêu cầu 1 – Phân tích dự án                            t                                                                                                                             e
+
+  Ưu điểm:
+  - Schema 3NF chuẩn chắc, ràng buộc toàn vẹn đầy đủ
+  - 17 queries analytics dùng Window Functions, CTE nhiều tầng, PERCENTILE_CONT, STDDEV – kỹ thuật SQL cao cấp
+  - Python script dùng execute_values (batch insert hiệu năng cao)
+
+  Khuyết điểm (đã được nâng cấp):
+  - Thiếu Stored Procedures, Triggers, Materialized Views
+  - Không có thanh toán, feedback, chứng chỉ, audit log
+  - Chỉ 200 students – không đủ cho phân tích thống kê
+  - Không có web interface
+
+  ---
+  ✅ Yêu cầu 2 – Script T3H (generate_data_t3h.py)
+
+  - 300 học viên đa dạng chi nhánh T3H (6 chi nhánh TPHCM)
+  - 16 khóa học theo catalog thực tế T3H: Office, Kế toán MISA, Web, React, Python, Data Science, ML/AI, Photoshop, AutoCAD...
+  - 20 giảng viên phân công theo chuyên môn
+  - 5 học kỳ (2023–2025), tổng ~15,000+ bản ghi
+
+  ---
+  ✅ Yêu cầu 3 – Web Demo (web/)
+
+  Flask app đầy đủ với:
+  - Dashboard: 6 KPI + 4 biểu đồ (Chart.js) + cảnh báo học viên rủi ro
+  - CRUD 7 entities: Students, Courses, Instructors, Classes, Enrollments, Grades
+  - 17 Analytics Reports: chia 5 tabs, có biểu đồ + bảng cho mỗi query
+
+  cd web && pip install -r requirements.txt && python app.py
+
+  ---
+  ✅ Yêu cầu 4 – Schema V2 + Báo cáo
+
+  database/schema_v2.sql bổ sung:
+  - 4 bảng mới: payments, feedback, certificates, audit_log
+  - 4 Triggers tự động (updated_at, auto-complete, capacity check, audit)
+  - 4 Stored Procedures/Functions (issue_certificate, student_summary, gpa_4scale)
+  - 2 Materialized Views (mv_student_stats, mv_revenue_stats)
+  - Mô hình dự báo bỏ học (v_dropout_risk_score – scoring 0-100)
+
+  report/PHAN_TICH.md: Báo cáo phân tích đầy đủ với bảng đánh giá theo tiêu chí thạc sĩ (ước tính 8.5/10 sau nâng cấp)
+
+Đây là đề tài môn học Cơ sở dữ liệu nâng cao hệ thạc sĩ:
+môn học trang bị cho học viên một số vấn đề về: tiếp cận những kiến thức chuyên sâu về cơ sở dữ liệu (CSDL quan
+hệ).
+- Lý thuyết: Trình bày các đặc điểm, các ích lợi và hạn chế, cách vận dụng các mô hình dữ liệu tiên tiến: CSDL
+quan hệ- đối tượng, CSDL phân tán, CSDL suy diễn, CSDL không quan hệ (NoSQL), CSDL không gian, CSDL
+đa phương tiện.
+- Thực hành: Học viên sẽ thiết kế các mô hình trên, thực hành các thao tác trên các hệ quản trị CSDL.
+Vậy hãy giúp tôi xem project này có đủ đáp ứng yêu cầu môn học không? có thể phát triển thêm những tính năng hay ho, chuyên sâu của môn học để ghi điểm?

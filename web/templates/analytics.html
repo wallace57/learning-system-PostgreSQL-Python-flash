@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% block title %}Analytics - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-chart-bar me-2 text-primary"></i>17 Báo cáo Analytics{% endblock %}
+
+{% block content %}
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs mb-3" id="analyticsTabs">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab1"><i class="fas fa-chart-line me-1"></i>Tổng quan</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab2"><i class="fas fa-users me-1"></i>Học viên</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab3"><i class="fas fa-book me-1"></i>Khóa học & DT</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab4"><i class="fas fa-chalkboard-teacher me-1"></i>Giảng viên</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab5"><i class="fas fa-exchange-alt me-1"></i>Tương quan</a></li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- TAB 1: Overview -->
+  <div class="tab-pane fade show active" id="tab1">
+    <div class="row g-3">
+      <!-- Q1: Avg score per course -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-primary me-2">Q1</span>Điểm TB theo khóa học</div>
+          <div class="card-body"><canvas id="q1chart" height="120"></canvas></div>
+          <div class="card-footer p-0"><div id="q1table" style="max-height:200px;overflow-y:auto"></div></div>
+        </div>
+      </div>
+      <!-- Q2: Completion rate -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-success me-2">Q2</span>Tỷ lệ hoàn thành khóa học</div>
+          <div class="card-body"><canvas id="q2chart" height="120"></canvas></div>
+          <div class="card-footer p-0"><div id="q2table" style="max-height:200px;overflow-y:auto"></div></div>
+        </div>
+      </div>
+      <!-- Q5: Monthly enrollment -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-info me-2">Q5</span>Xu hướng đăng ký theo tháng</div>
+          <div class="card-body"><canvas id="q5chart" height="120"></canvas></div>
+        </div>
+      </div>
+      <!-- Q16: Semester comparison -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-warning text-dark me-2">Q16</span>So sánh kết quả theo học kỳ</div>
+          <div class="card-body"><canvas id="q16chart" height="120"></canvas></div>
+          <div class="card-footer p-0"><div id="q16table" style="max-height:200px;overflow-y:auto"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Students -->
+  <div class="tab-pane fade" id="tab2">
+    <div class="row g-3">
+      <!-- Q4: Lowest attendance -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-danger me-2">Q4</span>Top 10 học viên vắng nhiều nhất</div>
+          <div class="card-body"><canvas id="q4chart" height="130"></canvas></div>
+        </div>
+      </div>
+      <!-- Q7: Student ranking -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-primary me-2">Q7</span>Xếp hạng học viên (Top 20)</div>
+          <div class="card-body p-0" style="max-height:340px;overflow-y:auto"><div id="q7table"></div></div>
+        </div>
+      </div>
+      <!-- Q9: Multi-course performance -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-success me-2">Q9</span>Học viên đa khóa học (Top 20)</div>
+          <div class="card-body p-0" style="max-height:340px;overflow-y:auto"><div id="q9table"></div></div>
+        </div>
+      </div>
+      <!-- Q14: At-risk students -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-danger me-2">Q14</span>Học viên cần chú ý (rủi ro cao)</div>
+          <div class="card-body p-0" style="max-height:340px;overflow-y:auto"><div id="q14table"></div></div>
+        </div>
+      </div>
+      <!-- Q15: Cumulative GPA -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-info me-2">Q15</span>GPA tích lũy theo từng khóa học</div>
+          <div class="card-body p-0" style="max-height:300px;overflow-y:auto"><div id="q15table"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Courses & Revenue -->
+  <div class="tab-pane fade" id="tab3">
+    <div class="row g-3">
+      <!-- Q6: Pass/fail -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-warning text-dark me-2">Q6</span>Tỷ lệ Đậu/Rớt theo khóa học</div>
+          <div class="card-body"><canvas id="q6chart" height="130"></canvas></div>
+        </div>
+      </div>
+      <!-- Q8: Revenue -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-success me-2">Q8</span>Doanh thu theo khóa học</div>
+          <div class="card-body"><canvas id="q8chart" height="130"></canvas></div>
+        </div>
+      </div>
+      <!-- Q11: Class capacity -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-info me-2">Q11</span>Tỷ lệ lấp đầy lớp học</div>
+          <div class="card-body"><canvas id="q11chart" height="130"></canvas></div>
+        </div>
+      </div>
+      <!-- Q17: Course popularity -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-primary me-2">Q17</span>Độ phổ biến khóa học theo danh mục</div>
+          <div class="card-body p-0" style="max-height:340px;overflow-y:auto"><div id="q17table"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Instructors -->
+  <div class="tab-pane fade" id="tab4">
+    <div class="row g-3">
+      <!-- Q3: Top instructors -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-warning text-dark me-2">Q3</span>Top 5 giảng viên tốt nhất</div>
+          <div class="card-body"><canvas id="q3chart" height="130"></canvas></div>
+          <div class="card-footer p-0"><div id="q3table"></div></div>
+        </div>
+      </div>
+      <!-- Q13: Workload -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-danger me-2">Q13</span>Khối lượng công việc giảng viên</div>
+          <div class="card-body"><canvas id="q13chart" height="130"></canvas></div>
+          <div class="card-footer p-0"><div id="q13table"></div></div>
+        </div>
+      </div>
+      <!-- Q12: Score distribution by type -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-secondary me-2">Q12</span>Phân phối điểm theo loại bài kiểm tra (thống kê)</div>
+          <div class="card-body"><canvas id="q12chart" height="80"></canvas></div>
+          <div class="card-footer p-0"><div id="q12table"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: Correlation -->
+  <div class="tab-pane fade" id="tab5">
+    <div class="row g-3">
+      <!-- Q10: Attendance vs grade -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header py-2"><span class="badge bg-info me-2">Q10</span>Tương quan Chuyên cần ↔ Điểm số</div>
+          <div class="card-body"><canvas id="q10chart" height="80"></canvas></div>
+          <div class="card-footer p-0" style="max-height:300px;overflow-y:auto"><div id="q10table"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end tab-content -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const C = {
+  blue:'#4f8ef7',green:'#28a745',orange:'#fd7e14',red:'#dc3545',
+  purple:'#6f42c1',teal:'#20c997',yellow:'#ffc107',info:'#17a2b8'
+};
+const PALETTE = Object.values(C);
+
+function tbl(cols, rows){
+  if(!rows||!rows.length) return '<p class="text-muted text-center p-3">Không có dữ liệu</p>';
+  let h = cols.map(c=>`<th>${c}</th>`).join('');
+  let body = rows.map(r=>{
+    let cells = cols.map(c=>`<td>${r[c]!==null&&r[c]!==undefined?r[c]:'–'}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="table table-sm table-hover mb-0 small"><thead><tr>${h}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function fmtNum(n){ return n!==null&&n!==undefined ? parseFloat(n).toLocaleString('vi-VN') : '–'; }
+
+async function loadQ(num, callback){
+  try {
+    const r = await fetch(`/api/q${num}`);
+    const d = await r.json();
+    callback(d);
+  } catch(e){ console.warn('Q'+num, e); }
+}
+
+// ─── Q1: Avg score per course ───
+loadQ(1, d=>{
+  new Chart(document.getElementById('q1chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.course_code),
+      datasets:[{label:'Điểm TB',data:d.map(r=>r.avg_score),
+        backgroundColor:PALETTE, borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{min:50,max:100}}}
+  });
+  document.getElementById('q1table').innerHTML = tbl(['course_code','course_name','total_students','avg_score','min_score','max_score'], d);
+});
+
+// ─── Q2: Completion rate ───
+loadQ(2, d=>{
+  new Chart(document.getElementById('q2chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.course_code),
+      datasets:[
+        {label:'Hoàn thành',data:d.map(r=>r.completed),backgroundColor:C.green,borderRadius:3},
+        {label:'Đang học', data:d.map(r=>r.in_progress),backgroundColor:C.blue,borderRadius:3},
+        {label:'Bỏ học',   data:d.map(r=>r.dropped),backgroundColor:C.red,borderRadius:3}
+      ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true}}}
+  });
+  document.getElementById('q2table').innerHTML = tbl(['course_code','total_enrollments','completed','dropped','completion_rate_pct'], d);
+});
+
+// ─── Q3: Top instructors ───
+loadQ(3, d=>{
+  new Chart(document.getElementById('q3chart'),{
+    type:'bar', indexAxis:'y',
+    data:{ labels:d.map(r=>r.instructor_name),
+      datasets:[{label:'Điểm TB học viên',data:d.map(r=>r.avg_student_score),
+        backgroundColor:C.yellow, borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{min:0,max:100}}}
+  });
+  document.getElementById('q3table').innerHTML = tbl(['instructor_name','specialization','total_students','avg_student_score','classes_taught'], d);
+});
+
+// ─── Q4: Lowest attendance ───
+loadQ(4, d=>{
+  new Chart(document.getElementById('q4chart'),{
+    type:'bar', indexAxis:'y',
+    data:{ labels:d.map(r=>r.student_name),
+      datasets:[{label:'Tỷ lệ chuyên cần (%)',data:d.map(r=>r.attendance_rate_pct),
+        backgroundColor:d.map(r=>r.attendance_rate_pct<50?C.red:C.orange), borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{min:0,max:100}}}
+  });
+});
+
+// ─── Q5: Monthly enrollment ───
+loadQ(5, d=>{
+  new Chart(document.getElementById('q5chart'),{
+    type:'line',
+    data:{ labels:d.map(r=>r.enrollment_month),
+      datasets:[{label:'Lượt đăng ký',data:d.map(r=>r.new_enrollments),
+        borderColor:C.blue,backgroundColor:'rgba(79,142,247,.15)',fill:true,tension:0.4,pointRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+});
+
+// ─── Q6: Pass/fail ───
+loadQ(6, d=>{
+  new Chart(document.getElementById('q6chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.course_code),
+      datasets:[
+        {label:'Đậu',data:d.map(r=>r.passed),backgroundColor:C.green,borderRadius:3},
+        {label:'Rớt',data:d.map(r=>r.failed),backgroundColor:C.red,borderRadius:3}
+      ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true}}}
+  });
+});
+
+// ─── Q7: Student ranking ───
+loadQ(7, d=>{
+  document.getElementById('q7table').innerHTML = tbl(['student_name','course_name','weighted_avg','rank_in_course','quartile'], d);
+});
+
+// ─── Q8: Revenue ───
+loadQ(8, d=>{
+  new Chart(document.getElementById('q8chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.course_code),
+      datasets:[{label:'Doanh thu (đ)',data:d.map(r=>r.total_revenue),
+        backgroundColor:PALETTE, borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString('vi-VN')+'đ'}}}}
+  });
+});
+
+// ─── Q9: Multi-course ───
+loadQ(9, d=>{
+  document.getElementById('q9table').innerHTML = tbl(['student_name','courses_taken','overall_avg_score','courses_list'], d);
+});
+
+// ─── Q10: Attendance correlation ───
+loadQ(10, d=>{
+  const colors = d.map(r=>r.performance_category==='Tốt'?C.green:r.performance_category==='Trung bình'?C.yellow:C.red);
+  new Chart(document.getElementById('q10chart'),{
+    type:'scatter',
+    data:{ datasets:[{
+      label:'Học viên', data:d.map(r=>({x:parseFloat(r.att_pct||0),y:parseFloat(r.avg_score||0)})),
+      backgroundColor:colors, pointRadius:5
+    }]},
+    options:{responsive:true,scales:{
+      x:{title:{display:true,text:'Tỷ lệ chuyên cần (%)'},min:0,max:100},
+      y:{title:{display:true,text:'Điểm trung bình'},min:0,max:100}
+    }}
+  });
+  document.getElementById('q10table').innerHTML = tbl(['student_name','course_name','att_pct','avg_score','performance_category'], d.slice(0,30));
+});
+
+// ─── Q11: Class capacity ───
+loadQ(11, d=>{
+  new Chart(document.getElementById('q11chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.class_code),
+      datasets:[
+        {label:'Đã đăng ký',data:d.map(r=>r.enrolled_count),backgroundColor:C.blue,borderRadius:3},
+        {label:'Còn trống', data:d.map(r=>r.available_seats),backgroundColor:'#e9ecef',borderRadius:3}
+      ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true}}}
+  });
+});
+
+// ─── Q12: Score distribution ───
+loadQ(12, d=>{
+  new Chart(document.getElementById('q12chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.assessment_type),
+      datasets:[
+        {label:'Trung bình',data:d.map(r=>r.avg_score),backgroundColor:C.blue,borderRadius:4},
+        {label:'Trung vị', data:d.map(r=>r.median),backgroundColor:C.teal,borderRadius:4},
+        {label:'P75',       data:d.map(r=>r.p75),backgroundColor:C.green,borderRadius:4}
+      ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{min:40,max:100}}}
+  });
+  document.getElementById('q12table').innerHTML = tbl(['assessment_type','total_grades','avg_score','std_dev','p25','median','p75'], d);
+});
+
+// ─── Q13: Instructor workload ───
+loadQ(13, d=>{
+  new Chart(document.getElementById('q13chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.instructor_name.split(' ').slice(-2).join(' ')),
+      datasets:[{label:'Tổng giờ dạy',data:d.map(r=>r.total_teaching_hours),
+        backgroundColor:C.orange, borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+  document.getElementById('q13table').innerHTML = tbl(['instructor_name','specialization','total_classes','total_students','total_teaching_hours'], d);
+});
+
+// ─── Q14: At-risk ───
+loadQ(14, d=>{
+  document.getElementById('q14table').innerHTML = tbl(['student_name','course_name','attendance_rate','avg_score'], d);
+});
+
+// ─── Q15: Cumulative GPA ───
+loadQ(15, d=>{
+  document.getElementById('q15table').innerHTML = tbl(['student_name','course_name','course_score','cumulative_avg','course_seq'], d);
+});
+
+// ─── Q16: Semester comparison ───
+loadQ(16, d=>{
+  new Chart(document.getElementById('q16chart'),{
+    type:'bar',
+    data:{ labels:d.map(r=>r.label),
+      datasets:[
+        {label:'Xuất sắc (≥80)',data:d.map(r=>r.excellent_scores),backgroundColor:C.green,borderRadius:3},
+        {label:'Trượt (<50)',   data:d.map(r=>r.failing_scores),backgroundColor:C.red,borderRadius:3},
+        {label:'Điểm TB',       data:d.map(r=>r.avg_score),type:'line',
+          borderColor:C.blue,backgroundColor:'transparent',yAxisID:'y2',tension:0.4}
+      ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},
+      scales:{y:{beginAtZero:true},y2:{position:'right',min:50,max:100,grid:{drawOnChartArea:false}}}}
+  });
+  document.getElementById('q16table').innerHTML = tbl(['label','total_students','total_classes','avg_score','excellent_scores','failing_scores'], d);
+});
+
+// ─── Q17: Course popularity by category ───
+loadQ(17, d=>{
+  document.getElementById('q17table').innerHTML = tbl(['category','course_code','course_name','level','enrollment_count','rank_in_category','pct_of_category'], d);
+});
+</script>
+{% endblock %}

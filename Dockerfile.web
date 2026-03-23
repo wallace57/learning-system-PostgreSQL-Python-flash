@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir flask psycopg2-binary python-dotenv
+
+# Copy toàn bộ web app
+COPY web/ .
+
+EXPOSE 5000
+
+CMD ["python", "-u", "app.py"]

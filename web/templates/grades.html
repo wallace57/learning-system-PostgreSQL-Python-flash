@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Điểm số - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-star-half-alt me-2 text-danger"></i>Quản lý Điểm số{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Bảng điểm ({{ grades|length }} bản ghi)</span>
+    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addGradeModal">
+      <i class="fas fa-plus me-1"></i>Nhập điểm
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>#</th><th>Học viên</th><th>Khóa học</th><th>Lớp</th>
+        <th>Loại đánh giá</th><th>Điểm</th><th>Trọng số</th>
+        <th>Ngày chấm</th><th>Ghi chú</th>
+      </tr></thead>
+      <tbody>
+      {% for g in grades %}
+      <tr>
+        <td>{{ g.grade_id }}</td>
+        <td><strong>{{ g.student_name }}</strong></td>
+        <td>{{ g.course_name }}</td>
+        <td><span class="badge bg-secondary">{{ g.class_code }}</span> <small class="text-muted">{{ g.semester }}</small></td>
+        <td>
+          <span class="badge
+            {% if g.assessment_type=='Final' %}bg-danger
+            {% elif g.assessment_type=='Midterm' %}bg-warning text-dark
+            {% elif g.assessment_type=='Project' %}bg-info text-dark
+            {% elif g.assessment_type=='Assignment' %}bg-success
+            {% elif g.assessment_type=='Quiz' %}bg-primary
+            {% else %}bg-secondary{% endif %}">
+            {{ g.assessment_type }}
+          </span>
+        </td>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="progress progress-xs" style="width:50px">
+              <div class="progress-bar
+                {% if g.score >= 70 %}bg-success
+                {% elif g.score >= 50 %}bg-warning
+                {% else %}bg-danger{% endif %}"
+                style="width:{{ g.score }}%"></div>
+            </div>
+            <span class="fw-bold
+              {% if g.score >= 90 %}text-success
+              {% elif g.score >= 70 %}text-primary
+              {% elif g.score >= 50 %}text-warning
+              {% else %}text-danger{% endif %}">
+              {{ g.score }}
+            </span>
+          </div>
+        </td>
+        <td>{{ g.weight }}</td>
+        <td>{{ g.graded_date }}</td>
+        <td>
+          {% if g.remarks %}
+            <span class="badge
+              {% if g.remarks=='Xuất sắc' %}bg-success
+              {% elif 'Không đạt' in g.remarks or 'Cần cải' in g.remarks %}bg-danger
+              {% else %}bg-secondary{% endif %}">
+              {{ g.remarks }}
+            </span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Grade Modal -->
+<div class="modal fade" id="addGradeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/grades/add">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Nhập điểm</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-12"><label class="form-label">Học viên / Lớp *</label>
+              <select name="enrollment_id" class="form-select" required>
+                <option value="">-- Chọn đăng ký --</option>
+                {% for e in enrollments %}
+                <option value="{{ e.enrollment_id }}">{{ e.label }}</option>
+                {% endfor %}
+              </select></div>
+            <div class="col-md-6"><label class="form-label">Loại đánh giá *</label>
+              <select name="assessment_type" class="form-select" required>
+                <option>Midterm</option><option>Final</option>
+                <option>Assignment</option><option>Quiz</option>
+                <option>Project</option><option>Participation</option>
+              </select></div>
+            <div class="col-md-6"><label class="form-label">Điểm số (0-100) *</label>
+              <input name="score" type="number" step="0.01" min="0" max="100" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Trọng số (0-1)</label>
+              <input name="weight" type="number" step="0.01" min="0.01" max="1" class="form-control" value="1.00"></div>
+            <div class="col-md-6"><label class="form-label">Ngày chấm</label>
+              <input name="graded_date" type="date" class="form-control"></div>
+            <div class="col-12"><label class="form-label">Ghi chú</label>
+              <input name="remarks" class="form-control" placeholder="Xuất sắc / Cần cải thiện..."></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-danger" type="submit"><i class="fas fa-save me-1"></i>Lưu điểm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

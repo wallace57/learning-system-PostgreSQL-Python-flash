@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Lớp học - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-school me-2" style="color:#6f42c1"></i>Quản lý Lớp học{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Danh sách lớp học ({{ classes|length }})</span>
+    <button class="btn btn-sm" style="background:#6f42c1;color:white" data-bs-toggle="modal" data-bs-target="#addClassModal">
+      <i class="fas fa-plus me-1"></i>Thêm lớp học
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>Mã lớp</th><th>Khóa học</th><th>Danh mục</th><th>Giảng viên</th>
+        <th>Học kỳ</th><th>Lịch học</th><th>Phòng</th>
+        <th>Ngày BĐ</th><th>Ngày KT</th><th>Sĩ số</th><th>Lấp đầy</th><th>Trạng thái</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for c in classes %}
+      <tr>
+        <td><strong>{{ c.class_code }}</strong></td>
+        <td>{{ c.course_name }}</td>
+        <td><span class="badge bg-info text-dark">{{ c.category }}</span></td>
+        <td>{{ c.instructor_name }}</td>
+        <td>{{ c.semester }}/{{ c.academic_year }}</td>
+        <td><small>{{ c.schedule or '–' }}</small></td>
+        <td>{{ c.room or '–' }}</td>
+        <td><small>{{ c.start_date }}</small></td>
+        <td><small>{{ c.end_date }}</small></td>
+        <td class="text-center">{{ c.enrolled or 0 }}/{{ c.max_students }}</td>
+        <td style="min-width:110px">
+          {% set pct = (c.fill_pct or 0)|int %}
+          <div class="d-flex align-items-center gap-1">
+            <div class="progress flex-grow-1 progress-xs">
+              <div class="progress-bar
+                {% if pct >= 90 %}bg-danger
+                {% elif pct >= 70 %}bg-warning
+                {% else %}bg-success{% endif %}"
+                style="width:{{ [pct,100]|min }}%"></div>
+            </div>
+            <small>{{ pct }}%</small>
+          </div>
+        </td>
+        <td>
+          <span class="badge
+            {% if c.status=='Active' %}bg-success
+            {% elif c.status=='Completed' %}bg-primary
+            {% else %}bg-secondary{% endif %}">
+            {{ c.status }}
+          </span>
+        </td>
+        <td>
+          <form method="post" action="/classes/{{ c.class_id }}/delete" class="d-inline"
+            onsubmit="return confirm('Xóa lớp học này?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Class Modal -->
+<div class="modal fade" id="addClassModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="/classes/add">
+        <div class="modal-header text-white" style="background:#6f42c1">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm lớp học mới</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">Mã lớp *</label>
+              <input name="class_code" class="form-control" required placeholder="VD: PY101-HK1"></div>
+            <div class="col-md-4"><label class="form-label">Khóa học *</label>
+              <select name="course_id" class="form-select" required>
+                <option value="">-- Chọn --</option>
+                {% for c in courses %}
+                <option value="{{ c.course_id }}">{{ c.course_code }} - {{ c.course_name }}</option>
+                {% endfor %}
+              </select></div>
+            <div class="col-md-4"><label class="form-label">Giảng viên *</label>
+              <select name="instructor_id" class="form-select" required>
+                <option value="">-- Chọn --</option>
+                {% for i in instructors %}
+                <option value="{{ i.instructor_id }}">{{ i.name }}</option>
+                {% endfor %}
+              </select></div>
+            <div class="col-md-3"><label class="form-label">Học kỳ *</label>
+              <input name="semester" class="form-control" required placeholder="HK1"></div>
+            <div class="col-md-3"><label class="form-label">Năm học *</label>
+              <input name="academic_year" class="form-control" required placeholder="2025-2026"></div>
+            <div class="col-md-3"><label class="form-label">Sĩ số tối đa</label>
+              <input name="max_students" type="number" class="form-control" value="35" min="10"></div>
+            <div class="col-md-3"><label class="form-label">Phòng học</label>
+              <input name="room" class="form-control" placeholder="A201"></div>
+            <div class="col-md-6"><label class="form-label">Lịch học</label>
+              <input name="schedule" class="form-control" placeholder="T3-T5 18:00-20:30"></div>
+            <div class="col-md-3"><label class="form-label">Ngày bắt đầu *</label>
+              <input name="start_date" type="date" class="form-control" required></div>
+            <div class="col-md-3"><label class="form-label">Ngày kết thúc *</label>
+              <input name="end_date" type="date" class="form-control" required></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn text-white" style="background:#6f42c1" type="submit">
+            <i class="fas fa-save me-1"></i>Lưu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

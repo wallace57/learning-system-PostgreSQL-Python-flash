@@ -1,0 +1,4 @@
+1. phân tích dự án này dựa vào mã nguồn và file README.md, đây là 1 đề tài môn học cấp thạc sĩ, hãy giúp tôi phát triển nó hơn để đạt được mức độ đánh giá cao ở cấp thạc sĩ, những ưu điểm và khuyết điểm, tập trung và nâng cấp những điểm hay cần làm
+2. tạo script generate data mẫu của trung tâm tin học T3H (https://t3h.com.vn/) bám theo yêu cầu của project
+3. thực hiện xây dựng 1 demo web đầy đủ các tính năng trong project
+4. phân tích đánh giá dự án và viết báo cáo

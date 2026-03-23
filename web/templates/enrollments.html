@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Đăng ký học - T3H{% endblock %}
+{% block page_title %}<i class="fas fa-clipboard-list me-2 text-info"></i>Quản lý Đăng ký học{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <span>Danh sách đăng ký ({{ enrollments|length }})</span>
+    <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#addEnrollModal">
+      <i class="fas fa-plus me-1"></i>Thêm đăng ký
+    </button>
+  </div>
+  <div class="card-body">
+    <table class="table table-hover dt">
+      <thead><tr>
+        <th>#</th><th>Học viên</th><th>Khóa học</th><th>Mã lớp</th>
+        <th>Học kỳ</th><th>Ngày đăng ký</th><th>Điểm TB</th><th>Trạng thái</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for e in enrollments %}
+      <tr>
+        <td>{{ e.enrollment_id }}</td>
+        <td><strong>{{ e.student_name }}</strong></td>
+        <td>{{ e.course_name }}</td>
+        <td><span class="badge bg-secondary">{{ e.class_code }}</span></td>
+        <td>{{ e.semester }}/{{ e.academic_year }}</td>
+        <td>{{ e.enrollment_date }}</td>
+        <td>
+          {% if e.avg_score is not none %}
+            <span class="fw-semibold {% if e.avg_score >= 70 %}text-success{% elif e.avg_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+              {{ e.avg_score }}
+            </span>
+          {% else %}–{% endif %}
+        </td>
+        <td>
+          <span class="badge
+            {% if e.status=='Enrolled' %}badge-enrolled
+            {% elif e.status=='Completed' %}badge-completed
+            {% elif e.status=='Dropped' %}badge-dropped
+            {% else %}bg-secondary{% endif %}">
+            {{ e.status }}
+          </span>
+        </td>
+        <td>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fas fa-cog"></i>
+            </button>
+            <ul class="dropdown-menu">
+              {% for st in ['Enrolled','Completed','Dropped','Withdrawn'] %}
+              <li>
+                <form method="post" action="/enrollments/{{ e.enrollment_id }}/status">
+                  <input type="hidden" name="status" value="{{ st }}">
+                  <button class="dropdown-item {% if e.status==st %}fw-bold{% endif %}" type="submit">
+                    {{ st }}
+                  </button>
+                </form>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Enrollment Modal -->
+<div class="modal fade" id="addEnrollModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/enrollments/add">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Đăng ký học mới</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-12"><label class="form-label">Học viên *</label>
+              <select name="student_id" class="form-select" required>
+                <option value="">-- Chọn học viên --</option>
+                {% for s in students %}
+                <option value="{{ s.student_id }}">{{ s.name }}</option>
+                {% endfor %}
+              </select></div>
+            <div class="col-12"><label class="form-label">Lớp học *</label>
+              <select name="class_id" class="form-select" required>
+                <option value="">-- Chọn lớp học --</option>
+                {% for c in classes %}
+                <option value="{{ c.class_id }}">{{ c.label }}</option>
+                {% endfor %}
+              </select></div>
+            <div class="col-md-6"><label class="form-label">Ngày đăng ký</label>
+              <input name="enrollment_date" type="date" class="form-control" value="2025-01-15"></div>
+            <div class="col-md-6"><label class="form-label">Trạng thái</label>
+              <select name="status" class="form-select">
+                <option>Enrolled</option><option>Completed</option><option>Dropped</option>
+              </select></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-info text-white" type="submit">
+            <i class="fas fa-save me-1"></i>Đăng ký
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

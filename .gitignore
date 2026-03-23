@@ -17,3 +17,15 @@ desktop.ini
 # Temporary files
 *.tmp
 *.log
+
+# Environment (chứa mật khẩu – KHÔNG commit)
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Docker volumes (local)
+pgdata/
