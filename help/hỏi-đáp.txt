@@ -1,0 +1,66 @@
+BỘ CÂU HỎI PHẢN BIỆN (8 câu – dàn trải 6 demo)
+
+  ---
+  Câu 1 – OOP-Relational
+
+  "TABLE INHERITANCE nghe hay đấy, nhưng nếu tôi muốn có một bảng enrollments với foreign key trỏ vào cả student_oo lẫn instructor_oo cùng lúc, tôi làm thế nào? PostgreSQL hỗ trợ điều đó không?"
+
+  Hướng trả lời: PostgreSQL không cho phép FK trỏ vào lớp cha person_base để cascade xuống lớp con. FK chỉ trỏ được vào 1 bảng cụ thể (hoặc person_base – lúc đó lớp con không được cover). Đây là nhược điểm
+  lớn nhất của TABLE INHERITANCE so với OOP thực sự. Giải pháp thực tế: dùng discriminator column trong 1 bảng phẳng, hoặc tạo bảng persons riêng và join.
+
+  ---
+  Câu 2 – Deductive
+
+  "Recursive CTE của anh/chị chống vòng lặp bằng WHERE cp.prereq_id <> ALL(base.path). Nếu tôi cố tình INSERT một vòng lặp tiên quyết vào database – ví dụ A cần B, B cần A – thì điều gì xảy ra? Schema hiện
+  tại có ràng buộc nào ngăn điều đó không?"
+
+  Hướng trả lời: Schema hiện tại không có constraint ngăn cycle. Chỉ có CHECK (course_id <> prereq_id) ngăn tự tham chiếu, không ngăn cycle A→B→A. Recursive CTE có depth < 10 làm "safety brake" nhưng nếu
+  cycle dài hơn 10 thì... vẫn bị. Giải pháp đúng: check cycle trước khi INSERT bằng trigger, hoặc dùng CYCLE clause (PostgreSQL 14+).
+
+  ---
+  Câu 3 – Distributed
+
+  "Anh/chị nói đây là CSDL Phân tán, nhưng tất cả partition attendance_shard_* đều nằm trên cùng 1 server PostgreSQL. Vậy có thực sự là 'phân tán' không? Điều gì thật sự khác nhau giữa partitioning của
+  PostgreSQL và distributed sharding thực sự như Citus, CockroachDB?"
+
+  Hướng trả lời: Đây là câu hỏi core. PostgreSQL Partitioning là single-node – dữ liệu chia nhỏ nhưng vẫn cùng server, CPU, disk. Lợi ích chính là partition pruning (scan ít data hơn) và index nhỏ hơn. Còn
+  phân tán thật sự (Citus, CockroachDB) thì các shard nằm trên server/node vật lý khác nhau → scale-out horizontal thật sự. Demo này mô phỏng khái niệm phân tán, FDW mới là ví dụ phân tán thật (2 Docker
+  container độc lập).
+
+  ---
+  Câu 4 – Distributed/FDW
+
+  "Trong FDW, khi tôi chạy SELECT s.full_name, a.course_name FROM students s JOIN archived_enrollments_2022 a ON ..., PostgreSQL thực thi câu query này như thế nào? Data được pull toàn bộ về local rồi join,
+  hay join được đẩy xuống remote server?"
+
+  Hướng trả lời: Phụ thuộc vào FDW pushdown capability. postgres_fdw hỗ trợ predicate pushdown và join pushdown (PostgreSQL 10+) – PostgreSQL optimizer có thể đẩy WHERE clause và một phần JOIN xuống remote
+  server để giảm data transfer. Kiểm tra bằng EXPLAIN (VERBOSE) → xem dòng Foreign Scan có Filter hay không. Nếu không pushdown được, toàn bộ bảng remote được fetch về local rồi join → rất chậm với bảng lớn.
+
+  ---
+  Câu 5 – NoSQL/JSONB
+
+  "Tại sao phải lưu JSONB trong PostgreSQL mà không dùng luôn MongoDB cho phần document store? Điểm gì JSONB làm được mà MongoDB không làm được, và ngược lại?"
+
+  Hướng trả lời:
+  - JSONB hơn MongoDB: ACID transaction bao phủ cả relational + document trong 1 transaction duy nhất (BEGIN; UPDATE grades; UPDATE course_materials; COMMIT;). JOIN giữa bảng quan hệ và document trong 1
+  query. Không cần 2 database riêng.
+  - MongoDB hơn JSONB: Schema validation linh hoạt hơn (JSONSchema native). Horizontal sharding native (replica set, mongos). Query planner tối ưu hơn cho pure document workload. $lookup aggregation phức tạp
+   hơn. Không cần biết SQL.
+  - Kết luận thực tế: Nếu app đã dùng PostgreSQL, thêm JSONB là hợp lý. Nếu 90% workload là document, MongoDB phù hợp hơn.
+
+  ---
+  Câu 6 – Spatial
+
+  "Trong code có đoạn ST_Distance(b1.geom::geography, b2.geom::geography). Tại sao phải cast sang ::geography? Nếu không cast, tính toán có gì sai?"
+
+  Hướng trả lời: Không cast thì geom là kiểu geometry – đơn vị là độ kinh/vĩ độ (degrees), không phải mét. Khoảng cách giữa Q1 (106.70, 10.78) và Gò Vấp (106.69, 10.83) sẽ ra ~0.055 degrees thay vì ~5.5 km.
+  Cast sang ::geography → PostgreSQL tính theo ellipsoid WGS-84, đơn vị mét chính xác. Tuy nhiên ::geography tính chậm hơn vì phức tạp hơn – nếu khu vực nhỏ (<100km), có thể dùng geometry với projection phù
+  hợp (VD: SRID 32648 – UTM Zone 48N cho TP.HCM).
+
+  ---
+  Câu 7 – FTS
+
+  "Tại sao code dùng to_tsvector('simple', ...) thay vì 'vietnamese' hay 'english'? PostgreSQL có hỗ trợ tiếng Việt natively không? Điều này ảnh hưởng gì đến chất lượng tìm kiếm?"
+
+  Hướng trả lời: PostgreSQL không có text search configuration cho tiếng Việt built-in. 'simple' chỉ lowercase và tách theo khoảng trắng – không stemming, không loại stop words tiếng Việt. 'english' sẽ
+  stemming sai hoàn toàn với tiếng Việt (VD: "lập trình" thành "lap trinh"). Giải pháp tốt hơn: cài extension pg_trgm (trigram similarity), hoặc cài unaccent để xử lý dấu, hoặc dùng 'simple' kết hợp với

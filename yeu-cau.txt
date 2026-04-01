@@ -1,4 +1,33 @@
-1. phân tích dự án này dựa vào mã nguồn và file README.md, đây là 1 đề tài môn học cấp thạc sĩ, hãy giúp tôi phát triển nó hơn để đạt được mức độ đánh giá cao ở cấp thạc sĩ, những ưu điểm và khuyết điểm, tập trung và nâng cấp những điểm hay cần làm
-2. tạo script generate data mẫu của trung tâm tin học T3H (https://t3h.com.vn/) bám theo yêu cầu của project
-3. thực hiện xây dựng 1 demo web đầy đủ các tính năng trong project
-4. phân tích đánh giá dự án và viết báo cáo
+M  yeu-ột số lưu ý
+
+1. Mô tả đề tài (bài toán) gồm 2 dòng
+
+Input:  XYZ
+
+Output: ABC
+
+2. Chọn lựa cách giải
+
+Đề tài (BÀI TOÁN, CHỦ ĐỀ) này có các tác giả nào đã làm, làm khi nào, ưu nhược điểm gì?
+
+Tại sao BẠN CHỌN giải bài toán này CÁCH KHÁC?
+
+3. Mô tả các kịch bản demo
+
+Một kịch bản cần mô tả các ý sau:
+
+a.Mục đích kịch bản: MMMMM
+
+b.Kịch bản minh hoạ cho lý thuyết phần nào: vd 2.3
+
+c.Input: dữ liệu đàu vào
+
+d.output: dữ liệu đầu ra
+
+e.Kết quả
+
+f.bình luận: BBBBBB
+
+4. Các câu hỏi trao đổi giữa các bạn và thầy, nên ghi chép lại, và trả lời báo cáo cuối kỳ
+
+5. Trình bày bằng file PPT, tiếng Việt, size rõ ràng. HV báo cáo vắng thì thông báo cho LT
